@@ -22,12 +22,12 @@ Peak = [];                 % control end-spike (Conolly Wing), default 1e-3
 dbg = 2;                   % show debug plot if dbg >= 1
 write_pulse = 0;           % write pulse in a file with Varian format
 
-min_order = 43;            % specify how to minimize order
+min_order = 58;             % specify how to minimize order
                            % 1 find minimal order
                            % n>1, set the order to this fixed value
                            % n = [n1 n2 ...], try different order, compare the performance (peak-amplitude, total-energy)                          
 % define multiband
-comp_select = 'pyruvate';      % which compound to select
+comp_select = 'lactate';      % which compound to select
 pick_compound = [6 1 3 4 2];  % which compound to consider, with the order of 
                               % 'pyruvate' 'lactate' 'alanine' 'pyruvate hydrate' 'bicarbonate' 'urea'
 mb_range = 0.1*ones(1,5);     % in kHz, bandwidth for each band
@@ -81,16 +81,16 @@ if isscalar(min_order)
     % optimal pulse design
     tic;
     name1 = 'mb-ap-SLR';
-    [rf, ~, rf_spec, b_spec] = dzrf_mb(n, dt, mb_cf, mb_range, mb_FA, mb_ripple, ptype, ftype, nucleus, flip_zero, downsampling, Peak, dbg, min_order);                 
+    [rf, ~, rf_spec, b_spec] = dzrf_mb(n, dt, mb_cf, mb_range, mb_FA, mb_ripple, ptype, ftype, nucleus, flip_zero, downsampling, Peak, dbg, min_order, [], [], name_cell);                 
     ComTime = toc;
     
     % gold standard of pm(equal-ripple) minimum phase pulse
     tic; 
-    BW = 1.3;     % in kHz, passband bandwidth
-    T_new = 1.85;     % in ms, pulse duration
+    BW = 0.65;     % in kHz, passband bandwidth
+    T_new = 4;     % in ms, pulse duration
     dt2 = T_new/n; % in ms, sampling interval
     name2 = 'sb-mp-SLR';
-    rf2 = dzrf(n, T_new*BW, ptype, 'min', d1, d2);  % design the standard slr pulse 
+    rf2 = dzrf(n, T_new*BW, ptype, 'min', 0.3*d1, d2);  % design the standard slr pulse 
     rf2 = rf2*(FA*pi/180)/sum(rf2);    % scale the pulse
     rf2 = rfscaleg(rf2, T_new, gamma); % scale the pulse in Gauss
     ComTime2 = toc;

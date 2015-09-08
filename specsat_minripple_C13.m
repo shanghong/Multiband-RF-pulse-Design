@@ -89,4 +89,5 @@ sim_rf_spectral(rf_cell, [dt, dt2], rfname_cell, nucleus, ptype, rf_spec.f*(fs/2
 
 scale = [0.8 0.9 1 1.1 1.2];
 sim_rf_scale(rf, dt, 'C13_minripple', scale, nucleus, ptype, rf_spec.f*(fs/2), rf_spec.a, rf_spec.d);
+sim_rf_scale(rf2, dt2, 'C13_specsat_mp', scale, nucleus, ptype, rf_spec.f*(fs/2), rf_spec.a, rf_spec.d);
 

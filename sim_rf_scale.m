@@ -115,9 +115,9 @@ if ( (show_spec == 1) && (strcmp(ptype,'sat') || strcmp(ptype,'inv')) )
     hold on; plot_spec_log(f,1-a,d); hold off;
 end
 set(gcf, 'Position', [150, 100, 1000, 400], 'PaperPositionMode', 'auto');
-ax = axes('position',[0,0,1,1],'visible','off');  
-text(0.07,0.95, '(A)','FontSize',23);
-text(0.51,0.95, '(B)','FontSize',23);
+%ax = axes('position',[0,0,1,1],'visible','off');  
+%text(0.07,0.95, '(A)','FontSize',23);
+%text(0.51,0.95, '(B)','FontSize',23);
 hgexport(gcf, [name_save, '_Mz.eps']);
 
 

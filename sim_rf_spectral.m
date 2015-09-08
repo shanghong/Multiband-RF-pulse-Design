@@ -29,7 +29,7 @@ function sim_rf_spectral(rf,dt,rfname,nucleus,ptype, f,a,d,name_cell)
 %  Modified by Hong Shang for switch between C13/H1 simulation Jun 2015
 
 % use Brian Hargreaves's block simulation function
-addpath /Users/hshang/matlab/rfpulses/mbSLR/bloch_simulation  
+addpath ./bloch_simulation  
 
 if nargin == 6
     show_spec = 0;          % do not show multiband spec
@@ -272,12 +272,12 @@ elseif ((iscell(rf)) && (length(rf) == 2))
     if (strcmp(ptype,'st') || strcmp(ptype,'ex')) % display Mxy
         figure;
         range_x_rf = max([(length(rf1)+1)*dt1, (length(rf2)+1)*dt2]);
-        subplot(2,2,1); set(gca, 'OuterPosition', [0.02, 0.51,  0.41, 0.47]); plot((1:length(rf1))*dt1, real(rf1),'r.-',(1:length(rf1))*dt1, imag(rf1),'b.-','markersize',14); leg = legend('real','imag'); set(leg,'FontSize',17);  set(gca,'FontSize',18); xlabel('Time (ms)','FontSize',18); ylabel('RF (Gauss)','FontSize',18); axis tight; set(gca,'xlim',[0, range_x_rf]); set(gca,'ylim',range_y_rf); %title(['RF pulse designed by ', rfname{1}],'FontSize',19); 
-        subplot(2,2,3); set(gca, 'OuterPosition', [0.02, 0.02,  0.41, 0.47]); plot((1:length(rf2))*dt2, real(rf2),'r.-',(1:length(rf2))*dt2, imag(rf2),'b.-','markersize',14); leg = legend('real','imag'); set(leg,'FontSize',17);  set(gca,'FontSize',18); xlabel('Time (ms)','FontSize',18); ylabel('RF (Gauss)','FontSize',18); axis tight; set(gca,'xlim',[0, range_x_rf]); set(gca,'ylim',range_y_rf); %title(['RF pulse designed by ', rfname{2}],'FontSize',19); 
-        subplot(2,2,2); set(gca, 'OuterPosition', [0.47, 0.51,  0.53, 0.47]); semilogy(df,abs(mxy1),'b-',   df,abs(mxy2),'r-', 'linewidth',1.5);    leg = legend(rfname{1},rfname{2}); set(leg,'FontSize',17, 'position',[0.88 0.61 0.01 0.01]);  xlabel('Frequency (Hz)','FontSize',18); set(gca,'FontSize',18); axis tight; ylabel('|Mxy|','FontSize',18); 
+        subplot(2,2,1); set(gca, 'OuterPosition', [0.02, 0.51,  0.41, 0.47]); plot((1:length(rf1))*dt1, real(rf1),'r',(1:length(rf1))*dt1, imag(rf1),'r--','linewidth',2); leg = legend('real','imag'); set(leg,'FontSize',17);  set(gca,'FontSize',18); xlabel('Time (ms)','FontSize',18); ylabel('RF (Gauss)','FontSize',18); axis tight; set(gca,'xlim',[0, range_x_rf]); set(gca,'ylim',range_y_rf); %title(['RF pulse designed by ', rfname{1}],'FontSize',19); 
+        subplot(2,2,3); set(gca, 'OuterPosition', [0.02, 0.02,  0.41, 0.47]); plot((1:length(rf2))*dt2, real(rf2),'b',(1:length(rf2))*dt2, imag(rf2),'b--','linewidth',2); leg = legend('real','imag'); set(leg,'FontSize',17);  set(gca,'FontSize',18); xlabel('Time (ms)','FontSize',18); ylabel('RF (Gauss)','FontSize',18); axis tight; set(gca,'xlim',[0, range_x_rf]); set(gca,'ylim',range_y_rf); %title(['RF pulse designed by ', rfname{2}],'FontSize',19); 
+        subplot(2,2,2); set(gca, 'OuterPosition', [0.47, 0.51,  0.53, 0.47]); semilogy(df,abs(mxy1),'r-',   df,abs(mxy2),'b-', 'linewidth',1.5);    leg = legend(rfname{1},rfname{2}); set(leg,'FontSize',17, 'position',[0.88 0.61 0.01 0.01]);  xlabel('Frequency (Hz)','FontSize',18); set(gca,'FontSize',18); axis tight; ylabel('|Mxy|','FontSize',18); 
         if ( (show_spec == 1) && isempty(name_cell) ),    hold on; plot_spec_log(f,a,d); hold off;  end;
         if ( (show_spec == 1) && (~isempty(name_cell)) ), hold on; plot_spec_log(f,a,d, name_cell); hold off; end;
-        subplot(2,2,4); set(gca, 'OuterPosition', [0.47, 0.02,  0.53, 0.47]); plot(df,myUnwrap(mxy1),'b-',  df,myUnwrap(mxy2),'r-','linewidth',1.5); leg = legend(rfname{1},rfname{2}); set(leg,'FontSize',17);  xlabel('Frequency (Hz)','FontSize',18);  axis tight;  set(gca,'FontSize',18); ylabel('\angleMxy (radians)','FontSize',18);
+        subplot(2,2,4); set(gca, 'OuterPosition', [0.47, 0.02,  0.53, 0.47]); plot(df,myUnwrap(mxy1),'r-',  df,myUnwrap(mxy2),'b-','linewidth',1.5); leg = legend(rfname{1},rfname{2}); set(leg,'FontSize',17);  xlabel('Frequency (Hz)','FontSize',18);  axis tight;  set(gca,'FontSize',18); ylabel('\angleMxy (radians)','FontSize',18);
 
         set(gcf, 'Position', [50, 100, 1100, 700], 'PaperPositionMode', 'auto');
         ax = axes('position',[0,0,1,1],'visible','off');  
@@ -288,37 +288,37 @@ elseif ((iscell(rf)) && (length(rf) == 2))
         hgexport(gcf, [name_save, '_all.eps']);
         
        
-        % plot FA, phase difference between the two pulses, assuming an excitation pulse
-        [FA1, pha1] = myRF2FA(rf1, dt1, df*1e-3, nucleus, 0);
-        [FA2, pha2] = myRF2FA(rf2, dt2, df*1e-3, nucleus, 0);
-        pha_shift = pha1-pha2; % in degree
-        pha_shift = round( mod(pha_shift+179.999,360)-179.999 ) ; % in degree, rewrite phase 
-
-        figure;
-        range_x_rf = max([(length(rf1)+1)*dt1, (length(rf2)+1)*dt2]);
-        subplot(2,2,1); set(gca, 'OuterPosition', [0.02, 0.51,  0.41, 0.47]); plot((1:length(rf1))*dt1, real(rf1),'r.-',(1:length(rf1))*dt1, imag(rf1),'b.-','markersize',14); leg = legend('real','imag'); set(leg,'FontSize',17);  set(gca,'FontSize',18); xlabel('Time (ms)','FontSize',18); ylabel('RF (Gauss)','FontSize',18); axis tight; set(gca,'xlim',[0, range_x_rf]); set(gca,'ylim',range_y_rf); %title(['RF pulse designed by ', rfname{1}],'FontSize',19); 
-        subplot(2,2,3); set(gca, 'OuterPosition', [0.02, 0.02,  0.41, 0.47]); plot((1:length(rf2))*dt2, real(rf2),'r.-',(1:length(rf2))*dt2, imag(rf2),'b.-','markersize',14); leg = legend('real','imag'); set(leg,'FontSize',17);  set(gca,'FontSize',18); xlabel('Time (ms)','FontSize',18); ylabel('RF (Gauss)','FontSize',18); axis tight; set(gca,'xlim',[0, range_x_rf]); set(gca,'ylim',range_y_rf); %title(['RF pulse designed by ', rfname{2}],'FontSize',19); 
-        subplot(2,2,2); set(gca, 'OuterPosition', [0.47, 0.51,  0.53, 0.47]); semilogy(df,abs(mxy1),'b--',   df,abs(mxy2),'r:', 'linewidth',1.5);    leg = legend(rfname{1},rfname{2}); set(leg,'FontSize',17, 'position',[0.88 0.61 0.01 0.01]);  xlabel('Frequency (Hz)','FontSize',18); set(gca,'FontSize',18); axis tight; ylabel('Flip Angle (degree)','FontSize',18); 
-        if ( (show_spec == 1) && isempty(name_cell) ),    hold on; plot_spec_log(f,a,d); hold off;  end;
-        if ( (show_spec == 1) && (~isempty(name_cell)) ), hold on; plot_spec_log(f,a,d, name_cell); hold off; end;
-        subplot(2,2,4); set(gca, 'OuterPosition', [0.47, 0.02,  0.53, 0.47]); plot(df,pha_shift,'b-', df(1),pha_shift(1),'r.'); leg = legend('total','ROI'); set(leg,'FontSize',17);  xlabel('Frequency (Hz)','FontSize',18);  axis tight;  set(gca,'FontSize',18); ylabel('RF phase shift (degree)','FontSize',18);
-
-        set(gcf, 'Position', [5, 100, 1100, 700], 'PaperPositionMode', 'auto');
-        ax = axes('position',[0,0,1,1],'visible','off');  
-        text(0.04,0.96, '(A)','FontSize',21);
-        text(0.49,0.96, '(B)','FontSize',21);
-        text(0.04,0.49, '(C)','FontSize',21);
-        text(0.49,0.49, '(D)','FontSize',21);
-        hgexport(gcf, [name_save, '_all_phase_shift.eps']);
+%         % plot FA, phase difference between the two pulses, assuming an excitation pulse
+%         [FA1, pha1] = myRF2FA(rf1, dt1, df*1e-3, nucleus, 0);
+%         [FA2, pha2] = myRF2FA(rf2, dt2, df*1e-3, nucleus, 0);
+%         pha_shift = pha1-pha2; % in degree
+%         pha_shift = round( mod(pha_shift+179.999,360)-179.999 ) ; % in degree, rewrite phase 
+% 
+%         figure;
+%         range_x_rf = max([(length(rf1)+1)*dt1, (length(rf2)+1)*dt2]);
+%         subplot(2,2,1); set(gca, 'OuterPosition', [0.02, 0.51,  0.41, 0.47]); plot((1:length(rf1))*dt1, real(rf1),'r.-',(1:length(rf1))*dt1, imag(rf1),'b.-','markersize',14); leg = legend('real','imag'); set(leg,'FontSize',17);  set(gca,'FontSize',18); xlabel('Time (ms)','FontSize',18); ylabel('RF (Gauss)','FontSize',18); axis tight; set(gca,'xlim',[0, range_x_rf]); set(gca,'ylim',range_y_rf); %title(['RF pulse designed by ', rfname{1}],'FontSize',19); 
+%         subplot(2,2,3); set(gca, 'OuterPosition', [0.02, 0.02,  0.41, 0.47]); plot((1:length(rf2))*dt2, real(rf2),'r.-',(1:length(rf2))*dt2, imag(rf2),'b.-','markersize',14); leg = legend('real','imag'); set(leg,'FontSize',17);  set(gca,'FontSize',18); xlabel('Time (ms)','FontSize',18); ylabel('RF (Gauss)','FontSize',18); axis tight; set(gca,'xlim',[0, range_x_rf]); set(gca,'ylim',range_y_rf); %title(['RF pulse designed by ', rfname{2}],'FontSize',19); 
+%         subplot(2,2,2); set(gca, 'OuterPosition', [0.47, 0.51,  0.53, 0.47]); semilogy(df,abs(mxy1),'b--',   df,abs(mxy2),'r:', 'linewidth',1.5);    leg = legend(rfname{1},rfname{2}); set(leg,'FontSize',17, 'position',[0.88 0.61 0.01 0.01]);  xlabel('Frequency (Hz)','FontSize',18); set(gca,'FontSize',18); axis tight; ylabel('Flip Angle (degree)','FontSize',18); 
+%         if ( (show_spec == 1) && isempty(name_cell) ),    hold on; plot_spec_log(f,a,d); hold off;  end;
+%         if ( (show_spec == 1) && (~isempty(name_cell)) ), hold on; plot_spec_log(f,a,d, name_cell); hold off; end;
+%         subplot(2,2,4); set(gca, 'OuterPosition', [0.47, 0.02,  0.53, 0.47]); plot(df,pha_shift,'b-', df(1),pha_shift(1),'r.'); leg = legend('total','ROI'); set(leg,'FontSize',17);  xlabel('Frequency (Hz)','FontSize',18);  axis tight;  set(gca,'FontSize',18); ylabel('RF phase shift (degree)','FontSize',18);
+% 
+%         set(gcf, 'Position', [5, 100, 1100, 700], 'PaperPositionMode', 'auto');
+%         ax = axes('position',[0,0,1,1],'visible','off');  
+%         text(0.04,0.96, '(A)','FontSize',21);
+%         text(0.49,0.96, '(B)','FontSize',21);
+%         text(0.04,0.49, '(C)','FontSize',21);
+%         text(0.49,0.49, '(D)','FontSize',21);
+%         hgexport(gcf, [name_save, '_all_phase_shift.eps']);
         
         
     elseif (strcmp(ptype,'sat') || strcmp(ptype,'inv'))  % display Mz
         figure;
         range_x_rf = max([(length(rf1)+1)*dt1, (length(rf2)+1)*dt2]);
-        subplot(2,2,1); set(gca, 'OuterPosition', [0.02, 0.51,  0.41, 0.47]); plot((1:length(rf1))*dt1, real(rf1),'r-',(1:length(rf1))*dt1, imag(rf1),'b-','linewidth',2); leg = legend('real','imag'); set(leg,'FontSize',17);  set(gca,'FontSize',18); xlabel('Time (ms)','FontSize',18); ylabel('RF (Gauss)','FontSize',18); axis tight; set(gca,'xlim',[0, range_x_rf]); set(gca,'ylim',range_y_rf); %title(['RF pulse designed by ', rfname{1}],'FontSize',19); 
-        subplot(2,2,3); set(gca, 'OuterPosition', [0.02, 0.02,  0.41, 0.47]); plot((1:length(rf2))*dt2, real(rf2),'r-',(1:length(rf2))*dt2, imag(rf2),'b-','linewidth',2); leg = legend('real','imag'); set(leg,'FontSize',17);  set(gca,'FontSize',18); xlabel('Time (ms)','FontSize',18); ylabel('RF (Gauss)','FontSize',18); axis tight; set(gca,'xlim',[0, range_x_rf]); set(gca,'ylim',range_y_rf); %title(['RF pulse designed by ', rfname{2}],'FontSize',19); 
-        subplot(2,2,2); semilogy(df,abs(mz1),'b-', df,abs(mz2),'r-');  leg = legend(rfname{1},rfname{2}); set(leg,'FontSize',17,'Position',[0.63 0.62 0.01 0.01]);  xlabel('Frequency (Hz)','FontSize',18); set(gca,'FontSize',18); axis tight; ylabel('|Mz|','FontSize',18); 
-        subplot(2,2,4); semilogy(df,1-mz1,'b-', df,1-mz2,'r-');        leg = legend(rfname{1},rfname{2}); set(leg,'FontSize',17,'Position',[0.63 0.145 0.01 0.01]);  xlabel('Frequency (Hz)','FontSize',18); set(gca,'FontSize',18); axis tight; ylabel('1-Mz','FontSize',18); 
+        subplot(2,2,1); set(gca, 'OuterPosition', [0.02, 0.51,  0.41, 0.47]); plot((1:length(rf1))*dt1, real(rf1),'r',(1:length(rf1))*dt1, imag(rf1),'r--','linewidth',2); leg = legend('real','imag'); set(leg,'FontSize',17);  set(gca,'FontSize',18); xlabel('Time (ms)','FontSize',18); ylabel('RF (Gauss)','FontSize',18); axis tight; set(gca,'xlim',[0, range_x_rf]); set(gca,'ylim',range_y_rf); %title(['RF pulse designed by ', rfname{1}],'FontSize',19); 
+        subplot(2,2,3); set(gca, 'OuterPosition', [0.02, 0.02,  0.41, 0.47]); plot((1:length(rf2))*dt2, real(rf2),'b',(1:length(rf2))*dt2, imag(rf2),'b--','linewidth',2); leg = legend('real','imag'); set(leg,'FontSize',17);  set(gca,'FontSize',18); xlabel('Time (ms)','FontSize',18); ylabel('RF (Gauss)','FontSize',18); axis tight; set(gca,'xlim',[0, range_x_rf]); set(gca,'ylim',range_y_rf); %title(['RF pulse designed by ', rfname{2}],'FontSize',19); 
+        subplot(2,2,2); semilogy(df,abs(mz1),'r-', df,abs(mz2),'b-');  leg = legend(rfname{1},rfname{2}); set(leg,'FontSize',17,'Position',[0.63 0.62 0.01 0.01]);  xlabel('Frequency (Hz)','FontSize',18); set(gca,'FontSize',18); axis tight; ylabel('|Mz|','FontSize',18); 
+        subplot(2,2,4); semilogy(df,1-mz1,'r-', df,1-mz2,'b-');        leg = legend(rfname{1},rfname{2}); set(leg,'FontSize',17,'Position',[0.63 0.145 0.01 0.01]);  xlabel('Frequency (Hz)','FontSize',18); set(gca,'FontSize',18); axis tight; ylabel('1-Mz','FontSize',18); 
         if ( (show_spec == 1) && isempty(name_cell) )
             subplot(2,2,2); hold on; plot_spec_log(f,a,d); hold off;
             subplot(2,2,4); hold on; plot_spec_log(f,1-a,d); hold off;

@@ -6,7 +6,7 @@ clear; clc; close all;
 
 % define parameters
 B0 = 14;                   % in T, field strength
-n = 100;                   % number of samples of RF pulse/filter
+n = 200;                   % number of samples of RF pulse/filter
 T = 4;                     % in ms, initial pulse duration
 FA = 60;                   % in degree, flip angle
 d1 = 0.01;                 % in-slice ripple
@@ -19,12 +19,12 @@ flip_zero = 0;             % do not use flip-zero method
 downsampling = 1;          % downsampling rate for filter design, 1 = no downsampling
 Peak = 1e-3;               % control end-spike (Conolly Wing), default 1e-3
 dbg = 2;                   % show debug plot if dbg >= 1
-min_order = 58;             % specify how to minimize order
+min_order = 1;             % specify how to minimize order
                                % 1 find minimal order [default]
                                % n>1, set fixed number of order
                       
 % define multiband
-comp_select = 'lactate';      % which compound to select
+comp_select = 'urea';      % which compound to select
 pick_compound = [6 1 3 4 2];  % which compound to consider, with the order of 
                               % 'pyruvate' 'lactate' 'alanine' 'pyruvate hydrate' 'bicarbonate' 'urea'
 mb_range = 0.1*ones(1,5);     % in kHz, bandwidth for each band
@@ -76,7 +76,7 @@ fs = 1/dt;           % in kHz, sampling frequency
 % optimal pulse design
 name1 = 'mb-ap-SLR';
 tic;
-[rf, ~, rf_spec, b_spec] = dzrf_mb(n, dt, mb_cf, mb_range, mb_FA, mb_ripple, ptype, ftype, nucleus, flip_zero, downsampling, Peak, dbg, min_order);                 
+[rf, ~, rf_spec, b_spec] = dzrf_mb(n, dt, mb_cf, mb_range, mb_FA, mb_ripple, ptype, ftype, nucleus, flip_zero, downsampling, Peak, dbg, 58);                 
 ComTime = toc;
 
 % compare to a linear-phase multiband pulse

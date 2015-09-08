@@ -48,7 +48,7 @@ n_op = n;
 f_op = f;
 
 % design with original parameters
-[h1, status1] = fir_ap_cvx(n, f, a, d, lambda, Peak);
+[h1, status1] = fir_ap_cvx(n, f, a, d, lambda, Peak, dbg);
 if strcmp(status1, 'Failed')
     error('original parameters are too tight');
 end
@@ -145,7 +145,7 @@ if (min_order > 0)
     n_bot = 2;  % filter cannot be designed
     while 1
         n_mid = ceil((n_top + n_bot)/2);
-        [h0, status0] = fir_ap_cvx(n_mid, f, a, d,lambda,Peak);
+        [h0, status0] = fir_ap_cvx(n_mid, f, a, d,lambda, Peak, dbg);
         if strcmp(status0, 'Failed')  % n_mid is still too low
             n_bot = n_mid;
             fprintf('filter design Failed with n = %d \n', n_mid);
@@ -175,7 +175,26 @@ else
     error('invalid input of min_order');
 end
 
-
+if dbg >= 1
+    % display for the min_order mode, compare the original and final filter
+    wdisp = linspace(-1, 1, 1e4); 
+    H = fftshift(fft(h, length(wdisp))); % final filter
+    H1 = fftshift(fft(h1, length(wdisp))); % Initial filter
+    
+    figure; 
+    subplot(1,2,1); plot(1:length(h1),real(h1),'b-',1:length(h1),imag(h1),'b--',   1:length(h),real(h),'r-',1:length(h),imag(h),'r--', 'linewidth',2); 
+    leg = legend('Initial Real','Initial Imag', 'Optimal Real','Optimal Imag'); set(leg,'FontSize',17); 
+    ylabel('Filter Coefficients','FontSize',18); set(gca,'FontSize',18); axis tight;
+    
+    subplot(1,2,2); plot(wdisp,abs(H1),'b-', wdisp,abs(H),'r-', 'linewidth',1.5); 
+    leg = legend('Initial','Optimal'); set(leg,'FontSize',17);
+    hold on; plot_spec(f, a, d); hold off; 
+    ylabel('|H(e^j^w)|','FontSize',18); xlabel('Normalized Frequency','FontSize',18); set(gca,'FontSize',18);  set(gca,'xlim',[min(f)-0.02 max(f)+0.02]); set(gca,'ylim',[min(a)-min(d)-0.02 max(a)+max(d)+0.02]);
+    set(gcf, 'Position', [100,100,800,350], 'PaperPositionMode', 'auto'); 
+    hgexport(gcf, 'FIR_design_minOrder.eps');
+    
+end
+    
 % use flip-zero method to reduce peak amplitude
 if min_peak
     if dbg >=1    

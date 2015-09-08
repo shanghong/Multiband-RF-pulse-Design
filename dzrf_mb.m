@@ -1,6 +1,6 @@
-function [rf_pulse,b, rf_spec, b_spec] = dzrf_mb(n, dt, mb_cf, mb_range, mb_FA, mb_ripple, ptype, ftype, nucleus, flip_zero, downsampling, Peak, dbg, min_order, min_tran, shift_f)
+function [rf_pulse,b, rf_spec, b_spec] = dzrf_mb(n, dt, mb_cf, mb_range, mb_FA, mb_ripple, ptype, ftype, nucleus, flip_zero, downsampling, Peak, dbg, min_order, min_tran, shift_f, name_cell)
 %
-%  [rf_pulse,b, rf_spec, b_spec] = dzrf_mb(n, dt, mb_cf, mb_range, mb_FA, mb_ripple, ptype, ftype, nucleus, flip_zero, downsampling, Peak, dbg, min_order, min_tran, shift_f)
+%  [rf_pulse,b, rf_spec, b_spec] = dzrf_mb(n, dt, mb_cf, mb_range, mb_FA, mb_ripple, ptype, ftype, nucleus, flip_zero, downsampling, Peak, dbg, min_order, min_tran, shift_f, name_cell)
 %
 %  Design a RF pulse using the SLR algorithm, based on John Pauly's rf_tools 
 %  package.  Function conforms with dzrf.m (rf_tools)
@@ -45,6 +45,7 @@ function [rf_pulse,b, rf_spec, b_spec] = dzrf_mb(n, dt, mb_cf, mb_range, mb_FA, 
 %    min_order -- [0 1] to adjust 'ap_minorder_cvx' filter design       [optional]
 %    min_tran -- [0 1] to adjust 'ap_mintran_cvx' filter design         [optional]
 %    shift_f -- shift frequency to center - design pulse - shift back   [optional]
+%    name_cell -- name of each band                                     [optional]
 %
 %  Outputs:
 %    rf_pulse -- in Gauss, rf pulse 
@@ -68,7 +69,8 @@ if  (nargin <= 12), dbg = 0;  end;
 if ((nargin <= 13) || isempty(min_order)), min_order = 0.9;  end
 if ((nargin <= 14) || isempty(min_tran)),  min_tran = 0.85;  end
 if ((nargin <= 15) || isempty(shift_f)),  shift_f = 0;  end
-if  (nargin > 16),  error('too many input'); end;
+if ((nargin <= 16) || isempty(name_cell)),  name_cell = [];  end
+if  (nargin > 17),  error('too many input'); end;
 
 rf_pulse = [];
 b = [];
@@ -95,7 +97,7 @@ if abs(n-round(n)) > 1e-10  % n is not integer
 end
 
 % spec of frequency range for each band within [-1 1]
-f = rf_bandedge(n, dt, mb_cf, mb_range, mb_FA, mb_ripple, ptype, 0);
+f = rf_bandedge(n, dt, mb_cf, mb_range, mb_FA, mb_ripple, ptype, dbg-2);
        
 % spec of amplitude range for each band
 a = zeros(1,2*m_band);
@@ -119,6 +121,17 @@ end
 b_spec = struct('f',{f/downsampling},'a',{a},'d',{d});
 rf_spec = struct('f',{f/downsampling},'a',{a_M},'d',{d_M});
 
+% display spec for debug 
+if dbg >= 3
+    if isempty(name_cell)
+        figure; plot_spec(f*(fs/2), a_M, d_M); xlabel('Frequency (kHz)','FontSize',18);      ylabel('Multiband Spec of |Mxy|','FontSize',18);    set(gca,'FontSize',18);  axis tight;  set(gca,'xlim',[min(f*(fs/2)) - 0.1, max(f*(fs/2)) + 0.1]); set(gca,'ylim',[min(a_M)-max(d_M)-0.02 max(a_M)+max(d_M)+0.02]);  set(gcf, 'Position', [100,100,500,350], 'PaperPositionMode', 'auto'); hgexport(gcf, 'multiband_spec_M.eps');
+        figure; plot_spec(f, a, d);            xlabel('Normalized Frequency','FontSize',18); ylabel('Multiband Spec of |B_N(z)|','FontSize',18); set(gca,'FontSize',18);  axis tight;  set(gca,'xlim',[min(f)-0.02, max(f)+0.02]);                 set(gca,'ylim',[min(a)-max(d)-0.02 max(a)+max(d)+0.02]);          set(gcf, 'Position', [200,100,500,350], 'PaperPositionMode', 'auto'); hgexport(gcf, 'multiband_spec_B.eps');
+    else
+        figure; plot_spec(f*(fs/2), a_M, d_M, name_cell); xlabel('Frequency (kHz)','FontSize',18);      ylabel('Multiband Spec of |Mxy|','FontSize',18);    set(gca,'FontSize',18);  axis tight;  set(gca,'xlim',[min(f*(fs/2)) - 0.1, max(f*(fs/2)) + 0.1]); set(gca,'ylim',[min(a_M)-max(d_M)-0.02 max(a_M)+max(d_M)+0.02]); set(gcf, 'Position', [100,100,500,350], 'PaperPositionMode', 'auto'); hgexport(gcf, 'multiband_spec_M.eps');
+        figure; plot_spec(f, a, d, name_cell);            xlabel('Normalized Frequency','FontSize',18); ylabel('Multiband Spec of |B_N(z)|','FontSize',18); set(gca,'FontSize',18);  axis tight;  set(gca,'xlim',[min(f)-0.02, max(f)+0.02]);                 set(gca,'ylim',[min(a)-max(d)-0.02 max(a)+max(d)+0.02]);         set(gcf, 'Position', [200,100,500,350], 'PaperPositionMode', 'auto'); hgexport(gcf, 'multiband_spec_B.eps');
+    end
+end
+    
 % shift frequency if necessary
 switch shift_f
     case 0  % not shift
@@ -229,6 +242,38 @@ end;
 
 % scaled to Gauss
 rf_pulse = rfscaleg(rf,dt*length(rf),gamma);
+
+% display the process of SLR, only for excitation pulse (Mxy)
+if ( (dbg >= 3) && strcmp(ptype,'ex') && (downsampling == 1) )
+    
+    % reverse b and a only for display purpose
+    b_reverse = b(end:-1:1);
+    a_reverse = b2a(b_reverse);
+    
+    wdisp = linspace(-1,1,1e4);
+    Anz = fftshift(fft(a_reverse, length(wdisp)));
+    Bnz = fftshift(fft(b_reverse, length(wdisp)));
+    Mxy = 2 * conj(Anz) .* Bnz;
+    figure;
+    subplot(2,2,1); plot(1:length(b),real(b),'b-', 1:length(b),imag(b),'b--', 1:length(a),real(a)/10,'r-', 1:length(a),imag(a),'r--','linewidth',1.5);     
+    leg = legend('\beta Real','\beta Imag', '\alpha Real/10','\alpha Imag'); set(leg,'FontSize',17); 
+    set(gca,'FontSize',18); ylabel('\beta & \alpha polynomial','FontSize',18);  axis tight;
+    
+    subplot(2,2,3); plot(1:length(rf_pulse),real(rf_pulse),'b-', 1:length(rf_pulse),imag(rf_pulse),'b--','linewidth',2); leg = legend('real','imag'); set(leg,'FontSize',17); set(gca,'FontSize',18); ylabel('RF (Gauss)','FontSize',18);  axis tight;
+
+    subplot(2,2,2); plot(wdisp,abs(Bnz),'b-', wdisp,abs(Anz),'r-','linewidth',1.5); leg = legend('|B_N(z)|','|A_N(z)|'); set(leg,'FontSize',17); 
+    hold on; plot_spec(b_spec.f, b_spec.a, b_spec.d, name_cell);  hold off;  
+    xlabel('Normalized Frequency','FontSize',18);  set(gca,'FontSize',18); axis tight;           
+    axis tight;  set(gca,'xlim',[min(b_spec.f)-0.02, max(b_spec.f)+0.02]);  set(gca,'ylim',[min(b_spec.a)-max(b_spec.d)-0.02 1+0.02]);     
+    
+    subplot(2,2,4); plot(wdisp*(fs/2), abs(Mxy),'b-','linewidth',1.5); 
+    hold on; plot_spec(f*(fs/2), a_M, d_M, name_cell); hold off;
+    xlabel('Frequency (kHz)','FontSize',18); ylabel('|Mxy|','FontSize',18); set(gca,'FontSize',18); axis tight; set(gca,'xlim',[min(f*(fs/2)) - 0.1, max(f*(fs/2)) + 0.1]); set(gca,'ylim',[min(a_M)-max(d_M)-0.02 max(a_M)+max(d_M)+0.02]); 
+    
+    set(gcf, 'Position', [150, 150, 750, 600], 'PaperPositionMode', 'auto');
+    hgexport(gcf, 'Example_SLR_transform.eps');
+    
+end
 
 % shift frequency [optional]
 t_axis = [1:length(rf)]*dt; % in ms

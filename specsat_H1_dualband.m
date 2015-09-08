@@ -62,7 +62,7 @@ sim_rf_spectral(rf(:),dt,rfname,nucleus,ptype, rf_spec.f*(fs/2),rf_spec.a,rf_spe
 
 % write to external waveform
 if write_pulse
-    fprintf('dual band pulse 1 \n');
+    fprintf('dual band pulse \n');
     rfwrite(rf, length(rf)*dt*1e-3, mb_FA(3)*pi/180, gamma*1e3, 0);
 end
 

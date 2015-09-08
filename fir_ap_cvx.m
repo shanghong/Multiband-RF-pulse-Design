@@ -227,9 +227,17 @@ if dbg >= 2
 	[wsort, sidx] = sort(w); plot(w(sidx), sqrt(S(sidx)));  title('square root of Spectrum');  hold off; set(gca,'xlim',[-pi pi]);
      
     figure; 
-    wdisp = linspace(-pi,pi,1e3); H = fftshift(fft(h, length(wdisp)));
+    wdisp = linspace(-pi,pi,1e4); H = fftshift(fft(h, length(wdisp)));
     subplot(2,1,1); plot_spec(f, a, d); hold on; plot(wdisp, abs(H));  title('frequency response magnitude');  hold off; set(gca,'xlim',[-pi pi]);
     subplot(2,1,2); plot(wdisp, unwrap(angle(H)));  title('frequency response phase'); set(gca,'xlim',[-pi pi]);
+
+    % display all in one 
+    figure; 
+    subplot(1,2,1); plot(1:length(h), real(h),'b-',1:length(h), imag(h),'b--','linewidth',2); leg = legend('real','imag'); set(leg,'FontSize',17); ylabel('Filter Coefficients','FontSize',18); set(gca,'FontSize',18); axis tight;
+    subplot(1,2,2); plot(wdisp/pi, abs(H),'b-','linewidth',1.5); hold on; plot_spec(f/pi, a, d); hold off; ylabel('|H(e^j^w)|','FontSize',18); xlabel('Normalized Frequency','FontSize',18); set(gca,'FontSize',18);  set(gca,'xlim',[min(f/pi)-0.02 max(f/pi)+0.02]); set(gca,'ylim',[min(a)-min(d)-0.02 max(a)+max(d)+0.02]);
+    set(gcf, 'Position', [100,100,800,350], 'PaperPositionMode', 'auto'); 
+    hgexport(gcf, ['example_FIR_design_n',num2str(length(h)),'.eps']);
+    
 end
 
 
