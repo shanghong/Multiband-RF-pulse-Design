@@ -5,6 +5,18 @@ Example designs of RF pulses for bSSFP C-13 MRI at 14T and a dualband saturation
 
 It is hosted on this open-source, collaborative platform in order to encourage everyone in the MRI research community to contribute tools that will help our field rapidly progress.
 
+## Reference
+
+Hong Shang, Peder E.Z. Larson, Adam Kerr, Galen Reed, Subramaniam Sukumar, Adam Elkhaled, Jeremy W. Gordon, Michael A. Ohliger, John M. Pauly, Michael Lustig, Daniel B. Vigneron,
+Multiband RF pulses with improved performance via convex optimization,
+Journal of Magnetic Resonance,
+Volume 262,
+2016,
+Pages 81-90,
+https://doi.org/10.1016/j.jmr.2015.11.010.
+
+## Dependencies
+
 Some public MRI packages written in MATLAB by other authors are used, including 
     
     A RF pulse design toolbox developed by John Pauly using the Shinnar-Le Roux algorithm. Reference: Pauly J, Le Roux P, Nishimra D, Macovski A. Parameter relations for the Shinnar-Le Roux selective excitation pulse design algorithm. IEEE Tr Medical Imaging 1991; 10(1):53-65. http://rsl.stanford.edu/research/software.html
